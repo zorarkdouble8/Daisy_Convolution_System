@@ -1,0 +1,35 @@
+# Copy this file to Makefile before building:
+#   cp Makefile.template Makefile
+#
+# Adjust the three paths below for your libDaisy installation. They are
+# evaluated relative to this FFT_Impulse_Daisy directory. Makefile is ignored
+# intentionally so each user can keep their local paths out of Git.
+
+APP ?= reverb
+
+ifeq ($(filter $(APP),reverb uploader selftest),)
+$(error APP must be reverb, uploader, or selftest)
+endif
+
+TARGET = fft_ir_$(APP)
+override BUILD_DIR := build/$(APP)
+
+# Local toolchain and library locations. Update these for your machine.
+GCC_PATH = ../../GCC_ARM_Compilier/bin
+LIBDAISY_DIR = ../../Examples/DaisyExamples/libDaisy/
+DAISYSP_DIR = ../../Examples/DaisyExamples/DaisySP/
+
+# Shared DSP implementation and the selected app entry point.
+CPP_SOURCES = src/$(APP).cpp src/ir_asset.cpp src/partitioned_convolver.cpp src/upload_protocol.cpp
+C_SOURCES = \
+  $(LIBDAISY_DIR)/Drivers/CMSIS/DSP/Source/CommonTables/arm_common_tables.c \
+  $(LIBDAISY_DIR)/Drivers/CMSIS/DSP/Source/CommonTables/arm_const_structs.c \
+  $(LIBDAISY_DIR)/Drivers/CMSIS/DSP/Source/TransformFunctions/arm_cfft_f32.c \
+  $(LIBDAISY_DIR)/Drivers/CMSIS/DSP/Source/TransformFunctions/arm_cfft_radix8_f32.c \
+  $(LIBDAISY_DIR)/Drivers/CMSIS/DSP/Source/TransformFunctions/arm_rfft_fast_f32.c
+ASM_SOURCES = $(LIBDAISY_DIR)/Drivers/CMSIS/DSP/Source/TransformFunctions/arm_bitreversal2.s
+C_INCLUDES += -Isrc -I$(LIBDAISY_DIR)/Drivers/CMSIS/DSP/Include
+LDFLAGS += -u _printf_float
+
+SYSTEM_FILES_DIR = $(LIBDAISY_DIR)/core
+include $(SYSTEM_FILES_DIR)/Makefile

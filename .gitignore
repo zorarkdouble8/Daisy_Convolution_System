@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# Audio files (too big)
+*.mp3
+*.wav
+
 # Compiled Object files
 *.slo
 *.lo
